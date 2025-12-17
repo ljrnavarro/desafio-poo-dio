@@ -1,63 +1,75 @@
-import br.com.dio.desafio.dominio.Bootcamp;
-import br.com.dio.desafio.dominio.Curso;
-import br.com.dio.desafio.dominio.Dev;
-import br.com.dio.desafio.dominio.Mentoria;
+import br.com.dio.desafio.dominio.*;
 
 import java.time.LocalDate;
 
 public class Main {
     public static void main(String[] args) {
-        Curso curso1 = new Curso();
-        curso1.setTitulo("curso java");
-        curso1.setDescricao("descrição curso java");
-        curso1.setCargaHoraria(8);
+        System.out.println("=== BOOTCAMP DIO - SISTEMA DE APRENDIZADO ===\n");
 
-        Curso curso2 = new Curso();
-        curso2.setTitulo("curso js");
-        curso2.setDescricao("descrição curso js");
-        curso2.setCargaHoraria(4);
+        // Criar bootcamp
+        Bootcamp bootcampJava = new Bootcamp("Java Developer",
+                "Bootcamp completo para formação em Java e Spring Boot");
 
-        Mentoria mentoria = new Mentoria();
-        mentoria.setTitulo("mentoria de java");
-        mentoria.setDescricao("descrição mentoria java");
-        mentoria.setData(LocalDate.now());
+        System.out.println("Bootcamp criado: " + bootcampJava);
 
-        /*System.out.println(curso1);
-        System.out.println(curso2);
-        System.out.println(mentoria);*/
+        // Criar conteúdos
+        Curso cursoJava = new Curso("Java Básico",
+                "Fundamentos da linguagem Java", 8);
+        Curso cursoOOP = new Curso("Java OOP",
+                "Programação Orientada a Objetos com Java", 12);
+        Mentoria mentoriaCarreira = new Mentoria("Carreira Dev Java",
+                "Como se tornar um desenvolvedor Java profissional",
+                LocalDate.now().plusDays(7));
 
-        Bootcamp bootcamp = new Bootcamp();
-        bootcamp.setNome("Bootcamp Java Developer");
-        bootcamp.setDescricao("Descrição Bootcamp Java Developer");
-        bootcamp.getConteudos().add(curso1);
-        bootcamp.getConteudos().add(curso2);
-        bootcamp.getConteudos().add(mentoria);
+        // Adicionar conteúdos ao bootcamp
+        bootcampJava.adicionarConteudo(cursoJava);
+        bootcampJava.adicionarConteudo(cursoOOP);
+        bootcampJava.adicionarConteudo(mentoriaCarreira);
 
-        Dev devCamila = new Dev();
-        devCamila.setNome("Camila");
-        devCamila.inscreverBootcamp(bootcamp);
-        System.out.println("Conteúdos Inscritos Camila:" + devCamila.getConteudosInscritos());
-        devCamila.progredir();
-        devCamila.progredir();
-        System.out.println("-");
-        System.out.println("Conteúdos Inscritos Camila:" + devCamila.getConteudosInscritos());
-        System.out.println("Conteúdos Concluídos Camila:" + devCamila.getConteudosConcluidos());
-        System.out.println("XP:" + devCamila.calcularTotalXp());
+        System.out.println("\nConteúdos adicionados:");
+        bootcampJava.getConteudos().forEach(System.out::println);
 
-        System.out.println("-------");
+        // Criar desenvolvedores
+        Dev devAna = new Dev("Ana Silva");
+        Dev devCarlos = new Dev("Carlos Oliveira");
 
-        Dev devJoao = new Dev();
-        devJoao.setNome("Joao");
-        devJoao.inscreverBootcamp(bootcamp);
-        System.out.println("Conteúdos Inscritos João:" + devJoao.getConteudosInscritos());
-        devJoao.progredir();
-        devJoao.progredir();
-        devJoao.progredir();
-        System.out.println("-");
-        System.out.println("Conteúdos Inscritos João:" + devJoao.getConteudosInscritos());
-        System.out.println("Conteúdos Concluidos João:" + devJoao.getConteudosConcluidos());
-        System.out.println("XP:" + devJoao.calcularTotalXp());
+        System.out.println("\n=== INSCRIÇÕES NO BOOTCAMP ===");
 
+        // Inscrever desenvolvedores
+        devAna.inscreverBootcamp(bootcampJava);
+        devCarlos.inscreverBootcamp(bootcampJava);
+
+        System.out.println("\nStatus inicial:");
+        System.out.println(devAna);
+        System.out.println(devCarlos);
+
+        System.out.println("\n=== PROGRESSO DOS DEVS ===");
+
+        // Ana progride em todos os conteúdos
+        System.out.println("\n--- Progresso da Ana ---");
+        while (devAna.getTotalConteudosInscritos() > 0) {
+            devAna.progredir();
+        }
+
+        // Carlos progride em alguns conteúdos
+        System.out.println("\n--- Progresso do Carlos ---");
+        devCarlos.progredir();
+        devCarlos.progredir();
+
+        System.out.println("\n=== STATUS FINAL ===");
+        System.out.println(devAna);
+        System.out.println("Conteúdos concluídos pela Ana:");
+        devAna.getConteudosConcluidosList().forEach(c ->
+                System.out.println("  - " + c.getTitulo() + " (" + c.calcularXp() + " XP)"));
+
+        System.out.println("\n" + devCarlos);
+        System.out.println("Conteúdos concluídos pelo Carlos:");
+        devCarlos.getConteudosConcluidosList().forEach(c ->
+                System.out.println("  - " + c.getTitulo() + " (" + c.calcularXp() + " XP)"));
+
+        System.out.println("\n=== RESUMO DO BOOTCAMP ===");
+        System.out.println(bootcampJava);
+        System.out.println("Total de devs inscritos: " + bootcampJava.getTotalDevsInscritos());
+        System.out.println("Bootcamp ativo: " + (bootcampJava.isAtivo() ? "✅ Sim" : "❌ Não"));
     }
-
 }

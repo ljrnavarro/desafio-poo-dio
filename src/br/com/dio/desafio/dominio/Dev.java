@@ -7,59 +7,133 @@ public class Dev {
     private Set<Conteudo> conteudosInscritos = new LinkedHashSet<>();
     private Set<Conteudo> conteudosConcluidos = new LinkedHashSet<>();
 
-    public void inscreverBootcamp(Bootcamp bootcamp){
-        this.conteudosInscritos.addAll(bootcamp.getConteudos());
-        bootcamp.getDevsInscritos().add(this);
+    // Construtor com nome
+    public Dev(String nome) {
+        setNome(nome);
     }
 
+    // Construtor vazio
+    public Dev() {
+    }
+
+    // Inscrever em bootcamp
+    public void inscreverBootcamp(Bootcamp bootcamp) {
+        if (bootcamp == null) {
+            throw new IllegalArgumentException("Bootcamp não pode ser nulo");
+        }
+
+        if (!bootcamp.isAtivo()) {
+            throw new IllegalStateException("Bootcamp não está ativo para inscrições");
+        }
+
+        this.conteudosInscritos.addAll(bootcamp.getConteudos());
+        bootcamp.inscreverDev(this);
+    }
+
+    // Progredir no próximo conteúdo
     public void progredir() {
         Optional<Conteudo> conteudo = this.conteudosInscritos.stream().findFirst();
-        if(conteudo.isPresent()) {
-            this.conteudosConcluidos.add(conteudo.get());
-            this.conteudosInscritos.remove(conteudo.get());
+        if (conteudo.isPresent()) {
+            Conteudo c = conteudo.get();
+            this.conteudosConcluidos.add(c);
+            this.conteudosInscritos.remove(c);
+            System.out.println("✅ " + nome + " concluiu: " + c.getTitulo() +
+                    " (+" + c.calcularXp() + " XP)");
         } else {
-            System.err.println("Você não está matriculado em nenhum conteúdo!");
+            System.err.println("❌ " + nome + " não está matriculado em nenhum conteúdo!");
         }
     }
 
-    public double calcularTotalXp() {
-        Iterator<Conteudo> iterator = this.conteudosConcluidos.iterator();
-        double soma = 0;
-        while(iterator.hasNext()){
-            double next = iterator.next().calcularXp();
-            soma += next;
+    // Concluir conteúdo específico
+    public void concluirConteudo(Conteudo conteudo) {
+        if (conteudo == null) {
+            throw new IllegalArgumentException("Conteúdo não pode ser nulo");
         }
-        return soma;
 
-        /*return this.conteudosConcluidos
+        if (!conteudosInscritos.contains(conteudo)) {
+            throw new IllegalArgumentException("Conteúdo não encontrado nos conteúdos inscritos");
+        }
+
+        conteudosInscritos.remove(conteudo);
+        conteudosConcluidos.add(conteudo);
+        System.out.println("✅ " + nome + " concluiu: " + conteudo.getTitulo() +
+                " (+" + conteudo.calcularXp() + " XP)");
+    }
+
+    // Calcular XP total
+    public double calcularTotalXp() {
+        return this.conteudosConcluidos
                 .stream()
                 .mapToDouble(Conteudo::calcularXp)
-                .sum();*/
+                .sum();
     }
 
+    // Métodos utilitários
+    public int getTotalConteudosInscritos() {
+        return conteudosInscritos.size();
+    }
 
+    public int getTotalConteudosConcluidos() {
+        return conteudosConcluidos.size();
+    }
+
+    public double getPercentualConclusao() {
+        int total = getTotalConteudosInscritos() + getTotalConteudosConcluidos();
+        if (total == 0) return 0.0;
+        return (getTotalConteudosConcluidos() * 100.0) / total;
+    }
+
+    public List<Conteudo> getConteudosInscritosList() {
+        return new ArrayList<>(conteudosInscritos);
+    }
+
+    public List<Conteudo> getConteudosConcluidosList() {
+        return new ArrayList<>(conteudosConcluidos);
+    }
+
+    // Getters e Setters
     public String getNome() {
         return nome;
     }
 
     public void setNome(String nome) {
-        this.nome = nome;
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome não pode ser vazio");
+        }
+        this.nome = nome.trim();
     }
 
     public Set<Conteudo> getConteudosInscritos() {
-        return conteudosInscritos;
+        return new LinkedHashSet<>(conteudosInscritos); // Cópia defensiva
     }
 
     public void setConteudosInscritos(Set<Conteudo> conteudosInscritos) {
-        this.conteudosInscritos = conteudosInscritos;
+        if (conteudosInscritos == null) {
+            throw new IllegalArgumentException("Conteúdos inscritos não pode ser nulo");
+        }
+        this.conteudosInscritos = new LinkedHashSet<>(conteudosInscritos);
     }
 
     public Set<Conteudo> getConteudosConcluidos() {
-        return conteudosConcluidos;
+        return new LinkedHashSet<>(conteudosConcluidos); // Cópia defensiva
     }
 
     public void setConteudosConcluidos(Set<Conteudo> conteudosConcluidos) {
-        this.conteudosConcluidos = conteudosConcluidos;
+        if (conteudosConcluidos == null) {
+            throw new IllegalArgumentException("Conteúdos concluídos não pode ser nulo");
+        }
+        this.conteudosConcluidos = new LinkedHashSet<>(conteudosConcluidos);
+    }
+
+    @Override
+    public String toString() {
+        return "Dev{" +
+                "nome='" + nome + '\'' +
+                ", inscritos=" + getTotalConteudosInscritos() +
+                ", concluidos=" + getTotalConteudosConcluidos() +
+                ", XP=" + String.format("%.1f", calcularTotalXp()) +
+                ", progresso=" + String.format("%.1f%%", getPercentualConclusao()) +
+                '}';
     }
 
     @Override
@@ -67,11 +141,11 @@ public class Dev {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Dev dev = (Dev) o;
-        return Objects.equals(nome, dev.nome) && Objects.equals(conteudosInscritos, dev.conteudosInscritos) && Objects.equals(conteudosConcluidos, dev.conteudosConcluidos);
+        return Objects.equals(nome, dev.nome);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nome, conteudosInscritos, conteudosConcluidos);
+        return Objects.hash(nome);
     }
 }
